@@ -17,6 +17,10 @@
         "stdexcept": "cpp",
         "typeinfo": "cpp",
         "iostream": "cpp",
-        "__locale": "cpp"
+        "__locale": "cpp",
+        "iterator": "cpp",
+        "ios": "cpp",
+        "memory": "cpp",
+        "utility": "cpp"
     }
 }

@@ -2,27 +2,37 @@
 
 LZW::LZW()
 {
-    // Need to initialise first 256  ASCII values
-    for (int i = 0 ; i < init_dictionary_size; i++)
+    // Need to initialise first 128  ASCII values
+    for (unsigned int i = 0 ; i < init_dictionary_size; i++)
     {
-        Dictionary.emplace(i, std::to_string((char)i));
+        Dictionary.insert(std::pair<int, std::string>(i, std::string(1, static_cast<char>(i))));
     }
     curr_offset = 256; // To track how 'full' the dictionary is
+    prev = "";
+    curr = "";
+    C = 0;
 }
 
 
 void LZW::decompress(std::ifstream &infile, std::ostream &out)
 {
-    C = get_lzw(infile);
-    if (inDictionary(C)) // Word exists in dictionary
+    while (!infile.eof())
     {
-        out<<Dictionary.find(C)->second;
+        C = get_lzw(infile);
+        if (inDictionary(C)) // Word exists in dictionary
+        {
+            curr = Dictionary.find(C)->second;
+            out<<curr;
+            prev = prev + curr;
+            addToDictionary(prev);
+        }
+        else // Word not present in dictionary
+        {
+            prev = prev + prev[0];
+            addToDictionary(prev);
+            out<<prev;
+        }
     }
-    else 
-    {
-
-    }
-    addToDictionary();
 }
 
 
@@ -30,10 +40,11 @@ int LZW::get_lzw(std::ifstream &infile) const
 {
     char in = '0';
     int result = 0;
-    for (int i = 0; i < lzw_size; i++)
+    for (int i = 0; i < 12; i++)
     {
         infile>>in;
-        result = (result<<2) + in;
+        if (in == '1') result = (result<<1) + 1;
+        else result = result<<1;
     }
     return result;
 }
@@ -46,9 +57,8 @@ bool LZW::inDictionary(int word)
 }
 
 
-void LZW::addToDictionary()
+void LZW::addToDictionary(const std::string new_word)
 {
-    std::string tmp = Dictionary.find(P)->second + Dictionary.find(C)->second;
-    Dictionary.emplace(curr_offset, tmp);
+    Dictionary.insert(std::pair<int, std::string>(curr_offset, new_word));
     curr_offset++;
 }

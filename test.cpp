@@ -4,8 +4,6 @@ using namespace std;
 
 int main()
 {
-    int i;
-    while(true)
-    {
-    }
+    int i = 131;
+    cout<<static_cast<char>(i)<<std::endl;
 }

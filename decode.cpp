@@ -7,7 +7,7 @@
 int main (int argc, char **argv)
 {
     std::string pathname;
-    if (argc == 0) // Obtain path to file and filename
+    if (argc == 1) // Obtain path to file and filename
     {
         std::cout<<"Enter pathname to file: ";
         std::cin>>pathname;
@@ -25,10 +25,16 @@ int main (int argc, char **argv)
         exit(1);
     }
 
-    LZW playtime(); // Initialise the decompression object
+    LZW playtime; // Initialise the decompression object
 
     if (infile.is_open())
     {
         playtime.decompress(infile, std::cout);
     }
+    else 
+    {
+        std::cout<<"File didn't open"<<std::endl;
+    }
+
+    infile.close();
 }
