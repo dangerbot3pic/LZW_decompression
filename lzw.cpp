@@ -16,22 +16,30 @@ LZW::LZW()
 
 void LZW::decompress(std::ifstream &infile, std::ostream &out)
 {
+    C = get_lzw(infile); // Obtain and process first character
+    prev = Dictionary.find(C)->second;
+    out<<prev;
+
     while (!infile.eof())
     {
         C = get_lzw(infile);
-        if (inDictionary(C)) // Word exists in dictionary
+        if (inDictionary(C)) // If word exists in dictionary
         {
             curr = Dictionary.find(C)->second;
             out<<curr;
-            prev = prev + curr;
+            prev = prev + curr[0];
             addToDictionary(prev);
         }
-        else // Word not present in dictionary
+        /*else // Word not present in dictionary
         {
+            std::cerr<<"Prev before: "<<prev<<std::endl;
             prev = prev + prev[0];
+            std::cerr<<"Prev after: "<<prev<<std::endl;
             addToDictionary(prev);
+            prev = Dictionary.find(C)->second;
             out<<prev;
-        }
+        }*/
+        out<<std::endl;
     }
 }
 
