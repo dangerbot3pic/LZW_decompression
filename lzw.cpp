@@ -2,71 +2,97 @@
 
 LZW::LZW()
 {
-    // Need to initialise first 128  ASCII values
-    for (unsigned int i = 0 ; i < init_dictionary_size; i++)
-    {
-        Dictionary.insert(std::pair<int, std::string>(i, std::string(1, static_cast<char>(i))));
-    }
-    curr_offset = 256; // To track how 'full' the dictionary is
     prev = "";
     curr = "";
     C = 0;
+    next_nibble = NULL;
 }
 
 
 void LZW::decompress(std::ifstream &infile, std::ostream &out)
 {
     C = get_lzw(infile); // Obtain and process first character
-    prev = Dictionary.find(C)->second;
-    out<<prev;
+    C_prev = C;
+    out<<static_cast<char>(C);
 
-    while (!infile.eof())
+    do
     {
         C = get_lzw(infile);
-        if (inDictionary(C)) // If word exists in dictionary
+        if (!inDictionary(C)) // If code doesn't exist in dictionary
         {
-            curr = Dictionary.find(C)->second;
-            out<<curr;
-            prev = prev + curr[0];
-            addToDictionary(prev);
+            std::cerr<<"Not present"<<std::endl;
+            addToDictionary(translate(C_prev) + translate(C_prev).at(0));
+            out<<translate(C_prev) + translate(C_prev).at(0);
         }
-        /*else // Word not present in dictionary
+        else // Code present in dictionary
         {
-            std::cerr<<"Prev before: "<<prev<<std::endl;
-            prev = prev + prev[0];
-            std::cerr<<"Prev after: "<<prev<<std::endl;
-            addToDictionary(prev);
-            prev = Dictionary.find(C)->second;
-            out<<prev;
-        }*/
-        out<<std::endl;
+            std::cerr<<"Present"<<std::endl;
+            addToDictionary(translate(C_prev) + translate(C).at(0));
+            out<<translate(C);
+        }
+        std::cerr<<C<<" "<<C_prev<<std::endl;
+        std::cerr<<translate(C_prev)<<" "<<translate(C)<<std::endl;
+        std::cerr<<translate(Dictionary.size()+init_dictionary_size-1)<<" "<<Dictionary.size()+255<<std::endl<<std::endl;
+        C_prev = C;
     }
+    while (!infile.eof());
+    out<<std::endl;
+    //printDic();
 }
 
-
-int LZW::get_lzw(std::ifstream &infile) const
+std::string LZW::translate(int loc) const 
 {
-    char in = '0';
-    int result = 0;
-    for (int i = 0; i < 12; i++)
+    std::string output;
+    if (loc < init_dictionary_size) output = static_cast<char>(loc);
+    else output = Dictionary.find(loc-init_dictionary_size)->second;
+    return output;
+}
+
+void LZW::printDic()
+{
+    for (int it = 0; it < Dictionary.size(); it++)
     {
-        infile>>in;
-        if (in == '1') result = (result<<1) + 1;
-        else result = result<<1;
+        std::cerr<<translate(it+init_dictionary_size)<<std::endl;
     }
-    return result;
 }
 
 
-bool LZW::inDictionary(int word) 
+int LZW::get_lzw(std::ifstream &infile)
 {
+    char char_in[1];
+    infile.read(char_in, sizeof(char_in));
+    Byte in_byte(char_in[0]);
+    Char in_word;
+
+    if (next_nibble == NULL)
+    {
+        char char_next[1];
+        infile.read(char_next, sizeof(char_next));
+
+        Nibble in_nibble(char_next[0] >> 4);
+        next_nibble = new Nibble(char_next[0] & 0b1111);
+
+        for (int i = 11; i > 3; i--) in_word[i] = in_byte[i-4];
+        for (int i = 3; i >= 0; i--) in_word[i] = in_nibble[i];
+        return (int)in_word.to_ulong();
+    }
+    for (int i = 11; i >= 8; i--) in_word[i] = (*next_nibble)[i-8];
+    for (int i = 7; i >= 0; i--) in_word[i] = in_byte[i];
+    delete next_nibble;
+    next_nibble = NULL;
+    return (int)in_word.to_ulong();
+}
+
+
+bool LZW::inDictionary(int word) // Check if the number is in the dictionary
+{
+    if (C < init_dictionary_size) return true;
     if (Dictionary.find(word) != Dictionary.end()) return true;
     return false;
 }
 
 
-void LZW::addToDictionary(const std::string new_word)
+void LZW::addToDictionary(const std::string new_word) // Add a new word to dictionary
 {
-    Dictionary.insert(std::pair<int, std::string>(curr_offset, new_word));
-    curr_offset++;
+    Dictionary.insert(std::pair<int, std::string>(Dictionary.size(), new_word));
 }

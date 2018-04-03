@@ -1,0 +1,154 @@
+Present
+83 83
+S S
+SS 256
+
+Present
+84 83
+S T
+ST 257
+
+Not present
+257 84
+T ST
+TT 258
+
+Present
+65 257
+ST A
+STA 259
+
+Not present
+259 65
+A STA
+AA 260
+
+Present
+82 259
+STA R
+STAR 261
+
+Not present
+261 82
+R STAR
+RR 262
+
+Present
+76 261
+STAR L
+STARL 263
+
+Not present
+263 76
+L STARL
+LL 264
+
+Present
+69 263
+STARL E
+STARLE 265
+
+Not present
+260 69
+E AA
+EE 266
+
+Present
+84 260
+AA T
+AAT 267
+
+Present
+65 84
+T A
+TA 268
+
+Present
+82 65
+A R
+AR 269
+
+Present
+76 82
+R L
+RL 270
+
+Not present
+266 76
+L EE
+LL 271
+
+Present
+70 266
+EE F
+EEF 272
+
+Not present
+265 70
+F STARLE
+FF 273
+
+Present
+65 265
+STARLE A
+STARLEA 274
+
+Present
+70 65
+A F
+AF 275
+
+Present
+33 70
+F !
+F! 276
+
+Not present
+274 33
+! STARLEA
+!! 277
+
+Not present
+276 274
+STARLEA F!
+STARLEAS 278
+
+Not present
+278 276
+F! STARLEAS
+F!F 279
+
+Not present
+277 278
+STARLEAS !!
+STARLEASS 280
+
+Not present
+268 277
+!! TA
+!!! 281
+
+Not present
+270 268
+TA RL
+TAT 282
+
+Not present
+272 270
+RL EEF
+RLR 283
+
+Present
+10 272
+EEF 
+
+EEF
+ 284
+
+Present
+15 10
+
+ 
+
+ 285
+

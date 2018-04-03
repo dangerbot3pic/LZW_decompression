@@ -21,6 +21,12 @@
         "iterator": "cpp",
         "ios": "cpp",
         "memory": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "fstream": "cpp",
+        "locale": "cpp",
+        "istream": "cpp",
+        "cstddef": "cpp",
+        "type_traits": "cpp",
+        "system_error": "cpp"
     }
 }
