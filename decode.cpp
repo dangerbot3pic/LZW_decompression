@@ -15,15 +15,8 @@ int main (int argc, char **argv)
     else pathname = argv[1];
 
     std::ifstream infile;
-    try
-    {
-        infile.open(pathname.c_str(), std::ios::in | std::ios::binary);
-    }
-    catch (std::ifstream::failure &e)
-    {
-        std::cerr<<"ERROR: Invalid file/path to file. Please check.";
-        exit(1);
-    }
+
+    infile.open(pathname.c_str(), std::ios::in | std::ios::binary);
 
     LZW playtime; // Initialise the decompression object
 

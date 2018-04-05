@@ -2,61 +2,56 @@
 
 LZW::LZW()
 {
-    prev = "";
-    curr = "";
     C = 0;
     next_nibble = NULL;
 }
 
-
+// Decompress the input file and print output to output stream
 void LZW::decompress(std::ifstream &infile, std::ostream &out)
 {
-    C = get_lzw(infile); // Obtain and process first character
+    C = get_lzw(infile); // Ger code for first character
     C_prev = C;
-    out<<static_cast<char>(C);
+    out<<translate(C); // Print first character
+    C = get_lzw(infile);
+    std::string tmp;
 
-    do
+    while (!infile.eof()) // Consume character till file end of file
     {
-        C = get_lzw(infile);
-        if (!inDictionary(C)) // If code doesn't exist in dictionary
-        {
-            std::cerr<<"Not present"<<std::endl;
-            addToDictionary(translate(C_prev) + translate(C_prev).at(0));
-            out<<translate(C_prev) + translate(C_prev).at(0);
-        }
-        else // Code present in dictionary
-        {
-            std::cerr<<"Present"<<std::endl;
-            addToDictionary(translate(C_prev) + translate(C).at(0));
-            out<<translate(C);
-        }
-        std::cerr<<C<<" "<<C_prev<<std::endl;
-        std::cerr<<translate(C_prev)<<" "<<translate(C)<<std::endl;
-        std::cerr<<translate(Dictionary.size()+init_dictionary_size-1)<<" "<<Dictionary.size()+255<<std::endl<<std::endl;
+        if (inDictionary(C)) tmp = translate(C_prev) + translate(C).at(0); // If code is in dictionary
+        else tmp = translate(C_prev) + translate(C_prev).at(0); // If new code
+
+        addToDictionary(tmp);
+        out<<translate(C);
         C_prev = C;
+
+        C = get_lzw(infile); // Get next code
     }
-    while (!infile.eof());
     out<<std::endl;
-    //printDic();
 }
 
+// Translate code to character(s)
 std::string LZW::translate(int loc) const 
 {
     std::string output;
-    if (loc < init_dictionary_size) output = static_cast<char>(loc);
+    if (loc <= init_dictionary_size) output = static_cast<char>(loc);
     else output = Dictionary.find(loc-init_dictionary_size)->second;
     return output;
 }
 
-void LZW::printDic()
+// Check if dictionary is at size limit (4096)
+bool LZW::atLimit() const
 {
-    for (int it = 0; it < Dictionary.size(); it++)
-    {
-        std::cerr<<translate(it+init_dictionary_size)<<std::endl;
-    }
+    if (Dictionary.size() == 3840) return true;
+    return false;
 }
 
+// Clear the dictionary
+void LZW::Reset()
+{
+    Dictionary.clear();
+}
 
+// Obtain the next code
 int LZW::get_lzw(std::ifstream &infile)
 {
     char char_in[1];
@@ -64,6 +59,8 @@ int LZW::get_lzw(std::ifstream &infile)
     Byte in_byte(char_in[0]);
     Char in_word;
 
+    // If first four bits haven't already been extracted then extract sixteen bits
+    // using only the first twelve and store remaining four
     if (next_nibble == NULL)
     {
         char char_next[1];
@@ -76,6 +73,9 @@ int LZW::get_lzw(std::ifstream &infile)
         for (int i = 3; i >= 0; i--) in_word[i] = in_nibble[i];
         return (int)in_word.to_ulong();
     }
+
+    // Otherwise use stored four bits as first four bits of next code
+    // and extract only eight bits from file
     for (int i = 11; i >= 8; i--) in_word[i] = (*next_nibble)[i-8];
     for (int i = 7; i >= 0; i--) in_word[i] = in_byte[i];
     delete next_nibble;
@@ -83,16 +83,18 @@ int LZW::get_lzw(std::ifstream &infile)
     return (int)in_word.to_ulong();
 }
 
-
+// Check if code is in dictionary
 bool LZW::inDictionary(int word) // Check if the number is in the dictionary
 {
-    if (C < init_dictionary_size) return true;
-    if (Dictionary.find(word) != Dictionary.end()) return true;
+    if (C <= init_dictionary_size) return true;
+    if (word < init_dictionary_size+Dictionary.size()+1) return true;
     return false;
 }
 
-
+// Add a word to the dictionary
 void LZW::addToDictionary(const std::string new_word) // Add a new word to dictionary
 {
-    Dictionary.insert(std::pair<int, std::string>(Dictionary.size(), new_word));
+    if (atLimit()) Dictionary.clear(); // Ensure dictionary won't become oversized
+    int tmp = Dictionary.size()+1;
+    Dictionary.insert(std::pair<int, std::string>(tmp, new_word));
 }
